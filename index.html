@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 300px; /* Matches typical Blogger sidebar width */
+      margin: 0 auto;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #1a73e8; /* Matches Blogger's blue */
+    }
+
+    input[readonly] {
+      background-color: #f5f5f5;
+      cursor: default;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 5px;
+      transition: background-color 0.3s;
+    }
+
+    button.generate {
+      background-color: #1a73e8; /* Blogger's blue */
+    }
+
+    button.generate:hover {
+      background-color: #1557b0;
+    }
+
+    button.copy {
+      background-color: #666;
+    }
+
+    button.copy:hover {
+      background-color: #555;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .container {
+        max-width: 100%;
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 16px;
+      }
+
+      input, button {
+        padding: 6px;
+        font-size: 12px;
+      }
+
+      label {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create Payment Link</h2>
+    <div class="form-group">
+      <label for="googleDriveLink">Google Drive Link:</label>
+      <input type="text" id="googleDriveLink" placeholder="e.g., https://drive.google.com/file/d/...">
+    </div>
+    <div class="form-group">
+      <label for="fileId">File ID:</label>
+      <input type="text" id="fileId" readonly>
+    </div>
+    <button class="copy" id="copyFileIdButton" onclick="copyFileId()" disabled>Copy File ID</button>
+    <div class="form-group">
+      <label for="fileName">File Name:</label>
+      <input type="text" id="fileName" placeholder="e.g., 10 TikTok Hacks for Small Creators!">
+    </div>
+    <div class="form-group">
+      <label for="price">Price ($):</label>
+      <input type="number" id="price" step="0.01" placeholder="e.g., 3.84">
+    </div>
+    <div class="form-group">
+      <label for="itemNumber">Item Number:</label>
+      <input type="text" id="itemNumber" placeholder="e.g., 56">
+    </div>
+    <button class="generate" onclick="generateLink()">Generate Payment Link</button>
+    <div class="form-group">
+      <label for="generatedLink">Generated Link:</label>
+      <input type="text" id="generatedLink" readonly>
+    </div>
+    <button class="copy" id="copyLinkButton" onclick="copyLink()" disabled>Copy Payment Link</button>
+  </div>
+
+  <script>
+    // Watch for changes in Google Drive link to extract file ID
+    document.getElementById('googleDriveLink').addEventListener('input', function() {
+      const link = this.value.trim();
+      const fileIdField = document.getElementById('fileId');
+      const copyFileIdButton = document.getElementById('copyFileIdButton');
+
+      // Regular expression to extract file ID from Google Drive link
+      const fileIdMatch = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileIdMatch && fileIdMatch[1]) {
+        fileIdField.value = fileIdMatch[1];
+        copyFileIdButton.disabled = false;
+      } else {
+        fileIdField.value = '';
+        copyFileIdButton.disabled = true;
+      }
+    });
+
+    function generateLink() {
+      // Get input values
+      const fileName = document.getElementById('fileName').value.trim();
+      const price = parseFloat(document.getElementById('price').value).toFixed(2);
+      const itemNumber = document.getElementById('itemNumber').value.trim();
+
+      // Validate inputs
+      if (!fileName || isNaN(price) || !itemNumber) {
+        alert('Please fill in all fields correctly.');
+        return;
+      }
+
+      // Encode fileName to handle special characters and spaces
+      const encodedFileName = encodeURIComponent(fileName);
+
+      // Construct the payment link
+      const link = `https://kaylie-payment-site.vercel.app/?name=${encodedFileName}&price=${price}&item=${itemNumber}`;
+
+      // Display the link
+      const linkField = document.getElementById('generatedLink');
+      linkField.value = link;
+
+      // Enable the copy button
+      document.getElementById('copyLinkButton').disabled = false;
+    }
+
+    function copyLink() {
+      const linkField = document.getElementById('generatedLink');
+      linkField.select();
+      try {
+        document.execCommand('copy');
+        alert('Payment link copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy the payment link. Please copy it manually.');
+      }
+    }
+
+    function copyFileId() {
+      const fileIdField = document.getElementById('fileId');
+      fileIdField.select();
+      try {
+        document.execCommand('copy');
+        alert('File ID copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy the file ID. Please copy it manually.');
+      }
+    }
+  </script>
+</body>
+</html>
